@@ -4,8 +4,8 @@ resource "aws_s3_bucket" "buckets" {
 }
 
 resource "aws_s3_bucket_public_access_block" "bucket_block_public_access" {
-  for_each                = toset(var.bucket_names)
-  bucket                  = each.key
+  for_each = toset(var.bucket_names)
+  bucket = aws_s3_bucket.buckets[each.key].id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -14,15 +14,15 @@ resource "aws_s3_bucket_public_access_block" "bucket_block_public_access" {
 
 resource "aws_s3_bucket_versioning" "bucket_versioning" {
   for_each = toset(var.bucket_names)
-  bucket   = each.key
+  bucket = aws_s3_bucket.buckets[each.key].id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
 resource "aws_s3_bucket_logging" "bucket_logging" {
-  for_each      = toset(var.bucket_names)
-  bucket        = each.key
+  for_each = toset(var.bucket_names)
+  bucket = aws_s3_bucket.buckets[each.key].id
   target_bucket = aws_s3_bucket.log_bucket.id
   target_prefix = "log/"
 }
@@ -35,7 +35,7 @@ resource "aws_kms_key" "encryption_key" {
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "bucket_encryption_config" {
   for_each = toset(var.bucket_names)
-  bucket   = each.key
+  bucket = aws_s3_bucket.buckets[each.key].id
   rule {
     apply_server_side_encryption_by_default {
       kms_master_key_id = aws_kms_key.encryption_key.arn
